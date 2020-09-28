@@ -1,3 +1,13 @@
+References:
+https://blog.csdn.net/qq_43178297/article/details/88054842
+https://blog.csdn.net/nice_wen/article/details/102475433
+https://blog.csdn.net/Datuqiqi/article/details/50827040?utm_medium=distribute.pc_relevant_download.none-task-blog-baidujs-2.nonecase&depth_1-utm_source=distribute.pc_relevant_download.none-task-blog-baidujs-2.nonecase
+
+[slurm cluster with cuda]
+https://github.com/TuragaLab/slurm_cluster
+[Slurm.config]
+https://slurm.schedmd.com/configurator.html
+
 ================= Step 0. =================
 1. Update and Upgrade system
 $ sudo apt-get update && sudo apt-get upgrade && sudo apt install vim -y
@@ -50,6 +60,11 @@ $ sudo chown slurm:slurm /etc/munge/munge.key
 
 3. start munge (every nodes) [!! important !!]
 $ clustercmd sudo /etc/init.d/munge start
+
+4. enable munge service 
+$ systemctl start munge
+$ systemctl status munge
+$ systemctl enable munge
 
 ================= Step 2. =================
 1. Install slurm-llnl

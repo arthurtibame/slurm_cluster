@@ -1,0 +1,90 @@
+================= Step 0. =================
+1. Update and Upgrade system
+$ sudo apt-get update && sudo apt-get upgrade && sudo apt install vim -y
+
+* Setting hosts (with {ip} {hostanme})
+    // comment 127.0.0.1
+$ sudo vi /etc/hosts
+
+2. Setting keygen without entering password
+$ ssh-keygen -t rsa
+$ cd .ssh
+$ cp id_rsa.pub authorized_keys
+$ chmod 600 authorized_keys 
+
+3. Setting ~/.bashrc with cluster command by following functions 
+
+function othernodes {
+  grep "node[0-9]" /etc/hosts | awk '{print $2}' | grep -v $(hostname)
+}
+
+function clustercmd {
+  for node in $(othernodes); do ssh $node "$@"; done
+  $@
+}
+
+function clusterscp {
+  for node in $(othernodes); do
+    cat $1 | ssh $node "sudo tee $1" > /dev/null 2>&1
+  done
+}
+
+
+4. (Optional) sudo without password
+$ sudo vi /etc/sudoers
+
+- add following line in sudoers
+username ALL=(ALL) NOPASSWD:ALL
+
+
+================= Step 1. =================
+1. Install munge in every nodes
+* Every node should have the same munge.key
+
+$ clustercmd sudo apt-get install munge
+$ create-munge-key ==> (create munge key)
+
+2. Copy the key to other nodes
+Path = /etc/munge/munge.key
+$ sudo chown slurm:slurm /etc/munge/munge.key
+
+3. start munge (every nodes) [!! important !!]
+$ clustercmd sudo /etc/init.d/munge start
+
+================= Step 2. =================
+1. Install slurm-llnl
+$ clustercmd sudo apt-get install slurm-llnl
+
+================= Step 3. =================
+1. Edit your slurm.conf
+
+
+================= Step 4. =================
+1. Copy slurm.conf to othernodes 
+$ clusterscp /etc/slurm-llnl/slurm.conf
+$ clustercmd 
+
+================= Step 5. =================
+1. service enable and start 
+
+$ sudo systemctl enable slurmctld   （control node node0）
+$ sudo service slurmctld start  （control node node0）
+$ sudo systemctl enable slurmd  （compute node node[0-1]）
+$ sudo service slurmd start （compute node node[0-1]）
+
+================= Step 6. =================
+* Check status of slurm cluster
+$ sinfo 
+
+[output]
+PARTITION AVAIL  TIMELIMIT  NODES  STATE NODELIST
+test*        up   infinite      2   idle node[0-1]
+
+* execute command (for testing)
+$ srun -N 2 hostname
+
+[output]
+node1
+node0
+
+
